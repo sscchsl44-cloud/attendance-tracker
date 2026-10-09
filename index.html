@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>My Attendance — GEC Lakhisarai</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#0f172a;--mut:#64748b;--bd:#e2e8f0;--pri:#4f46e5;--pri2:#eef2ff;--ok:#047857;--okbg:#d1fae5;--bad:#b91c1c;--badbg:#fee2e2;--warn:#b45309;--warnbg:#fef3c7;--sh:0 1px 3px rgba(15,23,42,.08),0 6px 18px rgba(15,23,42,.05)}
+[data-theme=dark]{--bg:#0b1020;--card:#151b2e;--tx:#e8ecf6;--mut:#94a3b8;--bd:#263150;--pri:#818cf8;--pri2:#1e2547;--ok:#34d399;--okbg:#0d3b2e;--bad:#f87171;--badbg:#4a1d24;--warn:#fbbf24;--warnbg:#4a3512;--sh:0 1px 3px rgba(0,0,0,.4)}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+h1,h2,h3{margin:0;line-height:1.25}h3{font-size:1.05rem}
+a{color:var(--pri)}
+button,input,select,textarea{font:inherit;color:inherit}
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}.shell[hidden]{display:none}
+.side{position:sticky;top:0;height:100vh;background:var(--card);border-right:1px solid var(--bd);padding:18px 12px;display:flex;flex-direction:column;gap:6px}
+.brand{font-weight:700;font-size:1.05rem;padding:4px 10px 14px;display:flex;gap:8px;align-items:center}
+.brand i{background:var(--pri);color:#fff;border-radius:10px;width:32px;height:32px;display:grid;place-items:center;font-style:normal}
+.nv{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--mut);text-decoration:none;font-weight:500}
+.nv:hover{background:var(--pri2)}.nv.on{background:var(--pri2);color:var(--pri);font-weight:700}
+.main{min-width:0;padding:20px 24px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.top h1{font-size:1.5rem}
+.bnav{display:none}
+.btn{border:1px solid var(--bd);background:var(--card);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--pri)}.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}[data-theme=dark] .btn.ok,[data-theme=dark] .btn.pri{color:#0b1020}
+.btn.bad{color:var(--bad)}.btn.sm{padding:4px 10px;font-size:.85rem}.btn:disabled{opacity:.5;cursor:wait}
+:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;box-shadow:var(--sh);padding:16px;margin-bottom:16px}
+.grid{display:grid;gap:16px;margin-bottom:16px}.grid>.card{margin:0;min-width:0}
+.c5{grid-template-columns:repeat(5,1fr)}.c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}.c21{grid-template-columns:2fr 1fr}
+.stat small{color:var(--mut);display:block;font-weight:600}.stat b{font-size:1.9rem;line-height:1.2}.stat span{color:var(--mut);font-size:.85rem}
+.cwrap{position:relative;height:260px}.ring{position:relative;height:170px}
+.rt{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}.rt b{font-size:1.6rem}
+.mut{color:var(--mut)}.empty{color:var(--mut);padding:24px;text-align:center;border:1px dashed var(--bd);border-radius:12px}
+table{width:100%;border-collapse:collapse}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd);vertical-align:middle}th{font-size:.8rem;text-transform:uppercase;letter-spacing:.03em;color:var(--mut)}
+.tw{overflow-x:auto}tr.click{cursor:pointer}tr.click:hover{background:var(--pri2)}
+.tag,.b{display:inline-flex;gap:4px;align-items:center;padding:2px 9px;border-radius:99px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.tag.good,.b.present{background:var(--okbg);color:var(--ok)}.tag.low,.b.absent{background:var(--badbg);color:var(--bad)}.tag.near{background:var(--warnbg);color:var(--warn)}.tag.none{background:var(--pri2);color:var(--mut)}
+.bar{height:6px;background:var(--bd);border-radius:9px;margin-top:4px;min-width:60px}.bar i{display:block;height:100%;border-radius:9px;background:var(--pri)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.chip{border:1px solid var(--bd);background:var(--card);border-radius:99px;padding:5px 13px;cursor:pointer;font-weight:600;font-size:.88rem}.chip.on{background:var(--pri);color:#fff;border-color:var(--pri)}[data-theme=dark] .chip.on{color:#0b1020}
+input,select,textarea{border:1px solid var(--bd);background:var(--card);border-radius:9px;padding:7px 10px;max-width:100%}textarea{width:100%;min-height:60px}
+label{display:block;font-weight:600;font-size:.88rem;margin-bottom:10px}label>input:not([type=checkbox]),label>select,label>textarea{display:block;width:100%;margin-top:3px}
+label.ck{display:flex;gap:8px;align-items:center;font-weight:500}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 14px}
+.warnbox{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:.88rem;margin:8px 0}.note{font-size:.85rem;color:var(--mut)}
+.err{color:var(--bad);font-weight:600;min-height:1.2em}
+.qg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.qi{border:1px solid var(--bd);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}.qi a{font-weight:700;text-decoration:none;color:var(--tx)}.qi small{color:var(--mut)}.qi div{display:flex;gap:6px}
+.calhead{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}.calhead button{border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:3px 10px;cursor:pointer}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.calgrid .dw{text-align:center;font-size:.75rem;color:var(--mut);font-weight:700}
+.cd{min-width:0;overflow:hidden;min-height:54px;border:1px solid var(--bd);border-radius:9px;background:var(--card);padding:3px;display:flex;flex-direction:column;align-items:flex-start;cursor:pointer;text-align:left}.cd.e{border:0;background:none;cursor:default}
+.cd b{font-size:.85rem}.cd span{font-size:.72rem;font-weight:700;white-space:nowrap}
+.cd.P{background:var(--okbg);color:var(--ok)}.cd.A{background:var(--badbg);color:var(--bad)}.cd.M{background:var(--warnbg);color:var(--warn)}
+.cd.tdy{box-shadow:inset 0 0 0 2px var(--pri)}.cd.sel{outline:2px solid var(--tx);outline-offset:1px}
+.mini .cd{min-height:40px}
+.legend{font-size:.8rem;color:var(--mut);margin-top:8px}
+#modal,#dlg{position:fixed;inset:0;background:rgba(2,6,23,.55);display:none;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow:auto;z-index:50}#modal.on,#dlg.on{display:flex}#dlg{z-index:120;align-items:center}
+.mbox{background:var(--card);border-radius:18px;width:min(640px,100%);padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.x{border:0;background:none;cursor:pointer;color:var(--mut);padding:4px}
+.dl{display:grid;grid-template-columns:150px 1fr;gap:6px 10px;margin:0 0 12px}.dl dt{color:var(--mut);font-weight:600}.dl dd{margin:0;word-break:break-word}
+.map{height:260px;border-radius:12px;margin:10px 0;border:1px solid var(--bd)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;z-index:99;display:none;max-width:90vw;box-shadow:0 8px 30px rgba(0,0,0,.35)}#toast.on{display:block}#toast.err{background:#b91c1c}
+#lock{position:fixed;inset:0;background:var(--bg);display:none;place-items:center;z-index:100}#lock.on{display:grid}
+.lockbox{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:28px;width:min(340px,92vw);text-align:center;box-shadow:var(--sh)}
+.report{background:#fff;color:#000;border:1px solid var(--bd);border-radius:6px;padding:22px;font-size:13px}
+.report h2{text-align:center;font-size:20px;margin:2px 0}.report .sub{text-align:center;letter-spacing:.12em;font-size:11px;font-weight:700}
+.report .meta{display:grid;grid-template-columns:1fr 1fr;gap:3px 20px;margin:12px 0;border-top:2px solid #000;border-bottom:1px solid #000;padding:8px 0}
+.report table{margin:6px 0 12px;font-size:12px}.report th,.report td{border:1px solid #444;padding:4px 6px;color:#000}.report th{background:#e5e7eb;color:#000}
+.report h4{margin:12px 0 2px;font-size:13px}.report .tot{font-size:15px;font-weight:700;margin-top:10px}
+.report .sign{display:flex;justify-content:space-between;margin-top:46px}.report .sign span{border-top:1px solid #000;padding-top:3px;min-width:160px;text-align:center}
+@page{size:A4;margin:12mm}
+@media print{
+ body{background:#fff}.noprint,.side,.top,.bnav,#toast,#modal,#lock{display:none!important}
+ .shell{display:block}.main{padding:0}#view>*:not(.printwrap){display:none!important}
+ .printwrap>.noprint{display:none!important}.report{border:0;border-radius:0;padding:0}.report table,.report tr{break-inside:auto}.report tr{break-inside:avoid}.report thead{display:table-header-group}
+}
+@media(max-width:1100px){.c5{grid-template-columns:repeat(3,1fr)}.c21,.c3{grid-template-columns:1fr 1fr}}
+@media(max-width:820px){
+ .shell{display:block}.side{display:none}.main{padding:14px 12px 90px}
+ .bnav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bd);z-index:40;padding:4px 2px calc(4px + env(safe-area-inset-bottom))}
+ .bnav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:9.5px;text-decoration:none;color:var(--mut);padding:4px 0;overflow:hidden;text-overflow:ellipsis}.bnav a.on{color:var(--pri);font-weight:700}
+ .c5{grid-template-columns:1fr 1fr}.c2,.c21,.c3{grid-template-columns:minmax(0,1fr)}.top h1{font-size:1.25rem}
+ .dl{grid-template-columns:110px 1fr}#toast{bottom:84px}
+}
+@media(max-width:480px){.c5{grid-template-columns:1fr 1fr}.stat b{font-size:1.5rem}.cd{min-height:44px}.cd span{font-size:.62rem}}
+</style></head>
+<body>
+<div id="lock"></div>
+<div id="app" class="shell" hidden>
+ <aside class="side noprint"><div class="brand"><i>✓</i>My Attendance</div><nav id="nav"></nav>
+  <div style="margin-top:auto" class="note">Private · stored only in this browser</div></aside>
+ <div class="main">
+  <header class="top noprint"><div style="display:flex;align-items:center;gap:10px;min-width:0"><button class="btn" id="backBtn" data-a="back" aria-label="Go back" title="Go back" hidden>←</button><h1 id="ttl"></h1></div>
+   <div class="acts" style="margin:0"><button class="btn" data-a="theme" aria-label="Toggle light or dark theme">◐ Theme</button><button class="btn" id="lockBtn" data-a="lock" hidden>🔒 Lock</button><button class="btn pri" data-a="printGo">🖨 Print Attendance Report</button></div></header>
+  <main id="view"></main>
+ </div>
+ <nav class="bnav noprint" id="bnav"></nav>
+</div>
+<div id="modal" data-a="closeBd" role="dialog" aria-modal="true"></div>
+<div id="dlg" role="alertdialog" aria-modal="true"></div>
+<div id="toast" role="status"></div>
+<input type="file" id="file" accept="application/json,.json" hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+'use strict';
+/* ================= helpers ================= */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>ymd(new Date());
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const validDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&ymd(new Date(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10)))===s;
+const fmtD=s=>{if(!s)return'—';const[y,m,d]=s.split('-');return`${d} ${MON[m-1]} ${y}`};
+const fmtM=k=>{const[y,m]=k.split('-');return`${MON[m-1]} ${y}`};
+const fmtT=t=>{if(!t)return'—';const[h,m]=t.split(':').map(Number);return`${pad(h%12||12)}:${pad(m)} ${h<12?'AM':'PM'}`};
+const fmtTS=iso=>{const d=new Date(iso);return isNaN(d)?'—':`${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${fmtT(pad(d.getHours())+':'+pad(d.getMinutes()))}`};
+const str=(v,max)=>typeof v==='string'?v.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').slice(0,max).trim():'';
+const num=v=>{if(v===null||v===''||typeof v==='boolean')return null;const n=Number(v);return Number.isFinite(n)?n:null};
+const pct=(p,t)=>t>0?p/t*100:null;
+const fp=v=>v==null?'—':v.toFixed(2)+'%';
+const NOD='No attendance data available';
+const IC={dash:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',check:'<path d="m9 11 3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',cal:'<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',print:'<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/>',bar:'<path d="M12 20V10M18 20V4M6 20v-4"/>',set:'<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'};
+const ic=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+const NAV=[['dashboard','Dashboard','dash'],['attendance','Attendance','check'],['calendar','Calendar','cal'],['subjects','Subjects','book'],['reports','Reports','print'],['stats','Statistics','bar'],['settings','Settings','set']];
+
+/* ================= data layer (swap Store for Firebase/Supabase later) ================= */
+const DEF_SUBJ=[['100102','Engineering Mathematics - I','Theory'],['100104','Engineering Physics','Theory'],['100105','Introduction to AI','Theory'],['100108','Computer Fundamentals & Emerging Technologies','Theory'],['100109','Universal Human Values','Theory'],['100110','Essence of Indian Constitution','Theory'],['100111','Basics of Electrical & Electronics Engineering','Theory'],['100104P','Engineering Physics Lab','Lab'],['100111P','Basics of Electrical & Electronics Engineering Lab','Lab'],['100112P','Programming for Problem Solving Lab','Lab']];
+const DEFAULT={student:{id:'me',name:'',registrationNumber:'',college:'Government Engineering College Lakhisarai',branch:'B.Tech CSE (Data Science)',batch:'2026–2030',semester:'I',session:'2026–2027'},
+ subjects:DEF_SUBJ.map(([code,name,type],i)=>({id:'s'+(i+1),code,name,type})),attendance:[],
+ settings:{targetPercentage:75,goodPercentage:80,locationVerificationEnabled:true,geofenceEnabled:false,geofenceRequired:false,collegeLatitude:'',collegeLongitude:'',geofenceRadius:200,theme:'system',semStart:'',semEnd:'',printShowLocation:true,printSignature:true},pin:null};
+function sanitize(d,imp){
+ if(!d||typeof d!=='object'||Array.isArray(d))throw new Error('Not a valid backup file');
+ const o=structuredClone(DEFAULT),st=d.student&&typeof d.student==='object'?d.student:{};
+ for(const k of Object.keys(o.student))if(k!=='id'&&typeof st[k]==='string')o.student[k]=str(st[k],120);
+ const se=d.settings&&typeof d.settings==='object'?d.settings:{};
+ for(const k of Object.keys(o.settings)){const dv=o.settings[k],v=se[k];
+  if(typeof dv==='boolean'){if(typeof v==='boolean')o.settings[k]=v}
+  else if(typeof dv==='number'){const n=num(v);if(n!==null)o.settings[k]=n}
+  else if(typeof v==='string'||typeof v==='number')o.settings[k]=String(v).slice(0,40)}
+ if(!['system','light','dark'].includes(o.settings.theme))o.settings.theme='system';
+ o.settings.targetPercentage=Math.min(100,Math.max(1,o.settings.targetPercentage));o.settings.goodPercentage=Math.min(100,Math.max(o.settings.targetPercentage,o.settings.goodPercentage));
+ if(!validDate(o.settings.semStart))o.settings.semStart='';if(!validDate(o.settings.semEnd))o.settings.semEnd='';
+ if(Array.isArray(d.subjects)){const seen=new Set();o.subjects=[];
+  for(const s of d.subjects.slice(0,200)){if(!s||typeof s!=='object')continue;const name=str(s.name,100);if(!name)continue;let id=str(s.id,40)||uid();if(seen.has(id))id=uid();seen.add(id);o.subjects.push({id,code:str(s.code,20),name,type:s.type==='Lab'?'Lab':'Theory'})}}
+ const ids=new Set(o.subjects.map(s=>s.id)),rs=new Set();
+ if(Array.isArray(d.attendance)){for(const r of d.attendance.slice(0,20000)){if(!r||typeof r!=='object')continue;
+  if(typeof r.date!=='string'||!validDate(r.date)||!['present','absent'].includes(r.status)||!ids.has(r.subjectId))continue;
+  let id=str(r.id,40)||uid();if(rs.has(id))id=uid();rs.add(id);
+  const period=Number.isInteger(r.period)&&r.period>=1&&r.period<=20?r.period:1,tm=t=>typeof t==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(t)?t:'';
+  const la=num(r.latitude),lo=num(r.longitude),hasC=la!==null&&lo!==null&&Math.abs(la)<=90&&Math.abs(lo)<=180,ac=num(r.accuracy);
+  o.attendance.push({id,date:r.date,subjectId:r.subjectId,period,status:r.status,startTime:tm(r.startTime),endTime:tm(r.endTime),
+   timestamp:typeof r.timestamp==='string'&&!isNaN(new Date(r.timestamp))?r.timestamp:'',locationVerified:r.locationVerified===true&&hasC,
+   latitude:hasC?la:null,longitude:hasC?lo:null,accuracy:hasC&&ac!==null&&ac>=0?ac:null,geofence:['inside','outside'].includes(r.geofence)?r.geofence:'',note:str(r.note,500)})}}
+ if(!imp&&d.pin&&typeof d.pin.h==='string'&&typeof d.pin.s==='string'){o.pin={h:d.pin.h.slice(0,128),s:d.pin.s.slice(0,64)};if(typeof d.pin.rh==='string'&&typeof d.pin.rs==='string'){o.pin.rh=d.pin.rh.slice(0,128);o.pin.rs=d.pin.rs.slice(0,64)}if(typeof d.pin.em==='string')o.pin.em=str(d.pin.em,120)}
+ return o}
+const Store={key:'gec_attendance_v1',
+ load(){try{const r=localStorage.getItem(this.key);if(r)return sanitize(JSON.parse(r))}catch(e){console.warn('Load failed',e)}return structuredClone(DEFAULT)},
+ save(){try{localStorage.setItem(this.key,JSON.stringify(S))}catch(e){toast('Could not save — browser storage is full or blocked','err')}}};
+let S=Store.load();
+
+/* ================= calculations ================= */
+const subj=id=>S.subjects.find(s=>s.id===id);
+const cmpAsc=(a,b)=>a.date===b.date?a.period-b.period:a.date<b.date?-1:1;
+function filt(recs,{from,to,subj:sj}={}){return recs.filter(r=>(!from||r.date>=from)&&(!to||r.date<=to)&&(!sj||r.subjectId===sj))}
+function tally(recs){const p=recs.filter(r=>r.status==='present').length;return{p,a:recs.length-p,t:recs.length,pct:pct(p,recs.length)}}
+const bySubject=recs=>S.subjects.map(s=>({s,...tally(recs.filter(r=>r.subjectId===s.id))}));
+const monthKeys=recs=>[...new Set(recs.map(r=>r.date.slice(0,7)))].sort();
+function level(v){const t=S.settings.targetPercentage,g=S.settings.goodPercentage;if(v==null)return{k:'none',t:'No data',i:'–',msg:NOD};if(v<t)return{k:'low',t:'Low',i:'▼',msg:'Attendance below target'};if(v<=g)return{k:'near',t:'Near',i:'●',msg:'Attendance near target'};return{k:'good',t:'Good',i:'✔',msg:'Attendance on track'}}
+const tag=v=>{const l=level(v);return`<span class="tag ${l.k}" title="${l.msg}">${l.i} ${l.t}</span>`};
+function need(p,t,T){if(t===0)return null;if(p/t*100>=T)return 0;if(T>=100)return Infinity;return Math.ceil((T*t-100*p)/(100-T)-1e-9)}
+const canMiss=(p,t,T)=>{if(t===0||T<=0||p/t*100<T)return 0;return Math.max(0,Math.floor(100*p/T-t+1e-9))};
+const needTxt=n=>n===null?'—':n===0?'Target reached ✔':n===Infinity?'Not reachable at 100% target':`${n} class${n>1?'es':''} in a row`;
+const locLabel=r=>r.locationVerified?'Location Verified':'Location Not Verified';
+function nextPeriod(date){const u=new Set(S.attendance.filter(r=>r.date===date).map(r=>r.period));for(let i=1;i<=20;i++)if(!u.has(i))return i;return 0}
+const hav=(a,b,c,d)=>{const R=6371000,t=x=>x*Math.PI/180,dl=t(c-a),dn=t(d-b),h=Math.sin(dl/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+const geoCfg=()=>{const s=S.settings,la=num(s.collegeLatitude),lo=num(s.collegeLongitude);return s.geofenceEnabled&&la!==null&&lo!==null&&Math.abs(la)<=90&&Math.abs(lo)<=180?{la,lo,r:s.geofenceRadius}:null};
+
+/* ================= date range ================= */
+let R={preset:'semester',from:'',to:''};
+function rangeOf(p){const n=new Date(),t=ymd(n);
+ if(p==='today')return[t,t];
+ if(p==='week'){const d=new Date(n);d.setDate(d.getDate()-(d.getDay()+6)%7);const e=new Date(d);e.setDate(d.getDate()+6);return[ymd(d),ymd(e)]}
+ if(p==='month')return[ymd(new Date(n.getFullYear(),n.getMonth(),1)),ymd(new Date(n.getFullYear(),n.getMonth()+1,0))];
+ if(p==='lastmonth')return[ymd(new Date(n.getFullYear(),n.getMonth()-1,1)),ymd(new Date(n.getFullYear(),n.getMonth(),0))];
+ if(p==='semester')return[S.settings.semStart,S.settings.semEnd];
+ if(p==='all')return['',''];return[R.from,R.to]}
+const curRange=()=>{if(R.preset==='custom')return{from:R.from,to:R.to};const[from,to]=rangeOf(R.preset);return{from,to}};
+function rangeBar(){const P=[['today','Today'],['week','This Week'],['month','This Month'],['lastmonth','Last Month'],['semester','Semester'],['all','All time'],['custom','Custom Range']];const{from,to}=curRange();
+ return`<div class="card noprint"><div class="chips">${P.map(([k,l])=>`<button class="chip ${R.preset===k?'on':''}" data-a="preset" data-v="${k}" aria-pressed="${R.preset===k}">${l}</button>`).join('')}</div>
+ <div class="fg" style="max-width:520px"><label>From<input type="date" data-ch="rFrom" value="${esc(from)}"></label><label>To<input type="date" data-ch="rTo" value="${esc(to)}"></label></div>
+ <div class="note">Showing: ${from||to?`${from?fmtD(from):'beginning'} → ${to?fmtD(to):'latest'}`:'all records'}${R.preset==='semester'&&!from&&!to?' (set semester dates in Settings to narrow it)':''}</div></div>`}
+
+/* ================= UI plumbing ================= */
+const CH=[];let Q=[];
+const chart=(id,cfg)=>Q.push([id,cfg]);
+function flushCharts(){CH.forEach(c=>c.destroy());CH.length=0;if(typeof Chart==='undefined'){Q=[];return}
+ const cs=getComputedStyle(document.documentElement);Chart.defaults.color=cs.getPropertyValue('--mut').trim();Chart.defaults.borderColor=cs.getPropertyValue('--bd').trim();
+ Q.forEach(([id,cfg])=>{const el=document.getElementById(id);if(el)CH.push(new Chart(el,cfg))});Q=[]}
+const OK='#10b981',BAD='#ef4444',PRI='#6366f1',WARN='#f59e0b';
+const yPct={min:0,max:100,ticks:{callback:v=>v+'%'}};
+const cvs=(id,cls='cwrap')=>`<div class="${cls}"><canvas id="${id}" role="img" aria-label="${id} chart"></canvas></div>`;
+let toastT;function toast(m,type,ms=3200){const t=$('#toast');t.textContent=m;t.className='on '+(type||'');clearTimeout(toastT);if(ms)toastT=setTimeout(()=>t.className='',ms)}
+let curMap=null;
+function openModal(html){const m=$('#modal');m.innerHTML=`<div class="mbox">${html}</div>`;m.classList.add('on')}
+function ask(msg,o={}){return new Promise(res=>{const d=$('#dlg');d.innerHTML=`<div class="mbox" style="width:min(420px,100%)"><p style="white-space:pre-line;margin:0 0 16px">${esc(msg)}</p><div class="acts" style="justify-content:flex-end;margin:0"><button class="btn" data-k="0">Cancel</button><button class="btn ${o.danger?'bad':'pri'}" data-k="1">${esc(o.ok||'OK')}</button></div></div>`;d.classList.add('on');
+ const done=v=>{d.classList.remove('on');d.innerHTML='';d.onclick=null;d.onkeydown=null;res(v)};d.onclick=e=>{const k=e.target.closest('[data-k]');if(k)done(k.dataset.k==='1');else if(e.target===d)done(false)};d.onkeydown=e=>{if(e.key==='Escape')done(false)};d.querySelector('[data-k="1"]').focus()})}
+function closeModal(){if(curMap){curMap.remove();curMap=null}$('#modal').classList.remove('on');$('#modal').innerHTML=''}
+const badge=s=>`<span class="b ${s}">${s==='present'?'✓ Present':'✗ Absent'}</span>`;
+const timeTxt=r=>r.startTime&&r.endTime?`${fmtT(r.startTime)} – ${fmtT(r.endTime)}`:r.startTime?fmtT(r.startTime):'—';
+const sname=id=>{const s=subj(id);return s?esc(s.name):'(deleted subject)'};
+function applyTheme(){let t=S.settings.theme;if(t==='system')t=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.dataset.theme=t}
+matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{if(S.settings.theme==='system'){applyTheme();render()}});
+async function download(name,data,mime){
+ try{if(window.claude&&claude.use){const d=await claude.use('downloads');if(d){try{await d.save({filename:name,data:data instanceof Uint8Array?data.slice(0):data});toast('File saved: '+name);return true}catch(e){if(e&&e.code==='declined'){toast('Save cancelled');return false}console.warn('downloads capability failed',e)}}}}catch(e){}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);toast('File downloaded: '+name);return true}
+
+/* ================= views ================= */
+const stat=(l,v,sub='')=>`<div class="card stat"><small>${l}</small><b>${v}</b><span>${sub}</span></div>`;
+const subjTable=(rows,link=true)=>`<div class="tw"><table><thead><tr><th>Subject</th><th>Code</th><th>Present</th><th>Absent</th><th>Total</th><th>Attendance %</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr class="${link?'click':''}" ${link?`data-a="openSubj" data-id="${esc(r.s.id)}" tabindex="0"`:''}><td><b>${esc(r.s.name)}</b></td><td>${esc(r.s.code)}</td><td>${r.p}</td><td>${r.a}</td><td>${r.t}</td><td>${r.t?`${fp(r.pct)}<div class="bar"><i style="width:${r.pct}%"></i></div>`:'—'}</td><td>${tag(r.pct)}</td></tr>`).join('')||'<tr><td colspan="7" class="mut">No subjects yet — add them in Settings.</td></tr>'}</tbody></table></div>`;
+function quickGrid(){if(!S.subjects.length)return'<div class="empty">Add subjects in Settings first.</div>';
+ return`<div class="qg">${S.subjects.map(s=>`<div class="qi"><a href="#/subject/${esc(s.id)}">${esc(s.name)}</a><small>${esc(s.code)} · ${esc(s.type)}</small><div><button class="btn ok sm" data-a="quick" data-s="${esc(s.id)}" data-st="present">✓ Mark Present</button><button class="btn sm" data-a="quick" data-s="${esc(s.id)}" data-st="absent">✗ Absent</button></div></div>`).join('')}</div>
+ <p class="note">${S.settings.locationVerificationEnabled?'📍 Your location is read once, only when you press “Mark Present”, to record where you were. It is saved only on this device and never tracked in the background.':'Location verification is turned off in Settings.'}</p>`}
+function dashboard(){
+ const{from,to}=curRange(),recs=filt(S.attendance,{from,to}),T=tally(recs),rows=bySubject(recs),st=S.student,tg=S.settings.targetPercentage,gd=S.settings.goodPercentage;
+ const nd=need(T.p,T.t,tg),low=rows.filter(r=>r.t&&r.pct<tg),good=rows.filter(r=>r.t&&r.pct>gd),lv=level(T.pct);
+ if(T.t){chart('cRing',{type:'doughnut',data:{labels:['Present','Absent'],datasets:[{data:[T.p,T.a],backgroundColor:[OK,BAD],borderWidth:0}]},options:{cutout:'74%',maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  const act=rows.filter(r=>r.t);chart('cSub',{data:{labels:act.map(r=>r.s.code||r.s.name),datasets:[{type:'bar',label:'Attendance %',data:act.map(r=>+r.pct.toFixed(2)),backgroundColor:act.map(r=>level(r.pct).k==='low'?BAD:level(r.pct).k==='near'?WARN:OK),borderRadius:6},{type:'line',label:'Target',data:act.map(()=>tg),borderColor:PRI,borderDash:[6,4],pointRadius:0}]},options:{maintainAspectRatio:false,scales:{y:yPct},plugins:{tooltip:{callbacks:{title:i=>act[i[0].dataIndex].s.name}}}}});
+  const mk=monthKeys(recs);chart('cMon',{type:'bar',data:{labels:mk.map(fmtM),datasets:[{label:'Present',data:mk.map(k=>recs.filter(r=>r.date.startsWith(k)&&r.status==='present').length),backgroundColor:OK},{label:'Absent',data:mk.map(k=>recs.filter(r=>r.date.startsWith(k)&&r.status==='absent').length),backgroundColor:BAD}]},options:{maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,ticks:{precision:0}}}}});
+  chart('cPA',{type:'doughnut',data:{labels:['Present','Absent'],datasets:[{data:[T.p,T.a],backgroundColor:[OK,BAD]}]},options:{maintainAspectRatio:false}})}
+ const none=`<div class="empty">${NOD}</div>`;
+ return`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><h2>${st.name?`Hi, ${esc(st.name)} 👋`:'Welcome 👋'}</h2><div class="mut">${esc(st.college)} · ${esc(st.branch)}</div><div class="mut">Reg. No: ${esc(st.registrationNumber)||'—'} · Semester ${esc(st.semester)} · Session ${esc(st.session)} · Batch ${esc(st.batch)}</div>${!st.name||!st.registrationNumber?'<div class="warnbox">Add your name and registration number in <a href="#/settings">Settings → Profile</a>.</div>':''}</div></div></div>
+ ${rangeBar()}
+ <div class="grid c5"><div class="card stat"><small>Overall Attendance</small>${T.t?`<div class="ring"><canvas id="cRing" role="img" aria-label="Overall attendance ${fp(T.pct)}"></canvas><div class="rt"><div><b>${fp(T.pct)}</b><br><span class="tag ${lv.k}">${lv.i} ${lv.t}</span></div></div></div>`:`<div class="empty" style="margin-top:8px">${NOD}</div>`}</div>
+  ${stat('Present',T.p,'classes attended')}${stat('Absent',T.a,'classes missed')}${stat('Total Classes',T.t,'recorded')}${stat('Target',tg+'%',T.t?(nd===0?'Reached ✔':needTxt(nd)):'—')}</div>
+ <div class="card"><h3>Mark attendance</h3><p class="note">Pick a subject and tap Mark Present. It records today, in the next free period.</p>${quickGrid()}<div class="acts"><button class="btn" data-a="add" data-d="${today()}">+ Add with details / past date</button></div></div>
+ <div class="grid c3"><div class="card"><h3>${lv.i} Overall status</h3><p>${lv.msg}</p><p class="mut">${T.t?`Classes needed to reach ${tg}%: <b>${needTxt(nd)}</b>`:NOD}</p></div>
+  <div class="card"><h3>▼ Below target (${low.length})</h3>${low.length?low.map(r=>`<div><a href="#/subject/${esc(r.s.id)}">${esc(r.s.name)}</a> — <b>${fp(r.pct)}</b> · Attendance below target</div>`).join(''):'<p class="mut">None 🎉</p>'}</div>
+  <div class="card"><h3>✔ On track (above ${gd}%) (${good.length})</h3>${good.length?good.map(r=>`<div>${esc(r.s.name)} — <b>${fp(r.pct)}</b></div>`).join(''):'<p class="mut">None yet</p>'}</div></div>
+ <div class="card"><h3>Subject-wise attendance</h3>${subjTable(rows)}</div>
+ <div class="grid c2"><div class="card"><h3>Subject-wise chart</h3>${T.t?cvs('cSub'):none}</div><div class="card"><h3>Monthly attendance</h3>${T.t?cvs('cMon'):none}</div></div>
+ <div class="grid c2"><div class="card"><h3>Present vs Absent</h3>${T.t?cvs('cPA'):none}</div><div class="card mini"><h3>Calendar</h3>${calHtml('')}</div></div>`}
+
+/* attendance list */
+let F={q:'',st:'',date:'',subj:'',loc:''};
+function attRows(){const q=F.q.toLowerCase();return S.attendance.filter(r=>{const s=subj(r.subjectId);return(!q||(s&&(s.name+' '+s.code).toLowerCase().includes(q))||r.note.toLowerCase().includes(q))&&(!F.st||r.status===F.st)&&(!F.date||r.date===F.date)&&(!F.subj||r.subjectId===F.subj)&&(!F.loc||(F.loc==='v'?r.locationVerified:!r.locationVerified))}).sort((a,b)=>-cmpAsc(a,b))}
+function attTable(){const rs=attRows();if(!rs.length)return`<div class="empty">${S.attendance.length?'No records match these filters.':NOD+' — mark your first class above.'}</div>`;
+ return`<p class="note">${rs.length} record${rs.length>1?'s':''}</p><div class="tw"><table><thead><tr><th>Date</th><th>Subject</th><th>Period</th><th>Status</th><th>Time</th><th>Location</th><th></th></tr></thead><tbody>${rs.map(recRow).join('')}</tbody></table></div>`}
+const recRow=r=>`<tr><td>${fmtD(r.date)}</td><td>${sname(r.subjectId)}</td><td>${r.period}</td><td>${badge(r.status)}</td><td>${timeTxt(r)}</td><td>${r.locationVerified?'📍 Verified':'Not verified'}</td><td style="white-space:nowrap"><button class="btn sm" data-a="detail" data-id="${esc(r.id)}">View</button> <button class="btn sm" data-a="edit" data-id="${esc(r.id)}">Edit</button> <button class="btn sm bad" data-a="del" data-id="${esc(r.id)}">Delete</button></td></tr>`;
+const subjOpts=(sel,all)=>(all?`<option value="">All subjects</option>`:'')+S.subjects.map(s=>`<option value="${esc(s.id)}" ${s.id===sel?'selected':''}>${esc(s.code)} — ${esc(s.name)}</option>`).join('');
+function attendance(){return`<div class="card"><h3>Mark attendance</h3>${quickGrid()}<div class="acts"><button class="btn pri" data-a="add" data-d="${today()}">+ Add attendance (any date)</button></div></div>
+ <div class="card"><h3>Records</h3><div class="fg"><label>Search subject / note<input type="search" data-in="f_q" value="${esc(F.q)}" placeholder="e.g. physics"></label>
+ <label>Status<select data-ch="f_st"><option value="">All</option><option value="present" ${F.st==='present'?'selected':''}>Present</option><option value="absent" ${F.st==='absent'?'selected':''}>Absent</option></select></label>
+ <label>Date<input type="date" data-ch="f_date" value="${esc(F.date)}"></label><label>Subject<select data-ch="f_subj">${subjOpts(F.subj,true)}</select></label>
+ <label>Location<select data-ch="f_loc"><option value="">All</option><option value="v" ${F.loc==='v'?'selected':''}>Verified</option><option value="n" ${F.loc==='n'?'selected':''}>Not verified</option></select></label></div>
+ <div class="acts" style="margin:0 0 8px"><button class="btn sm" data-a="clearF">Clear filters</button></div><div id="attTable">${attTable()}</div></div>`}
+
+/* calendar */
+let CAL={m:today().slice(0,7),sel:today()};
+function calHtml(sj){const[y,m]=CAL.m.split('-').map(Number),lead=(new Date(y,m-1,1).getDay()+6)%7,dim=new Date(y,m,0).getDate(),map={};
+ S.attendance.filter(r=>r.date.startsWith(CAL.m)&&(!sj||r.subjectId===sj)).forEach(r=>{(map[r.date]??={p:0,a:0})[r.status==='present'?'p':'a']++});
+ let c='';for(let i=0;i<lead;i++)c+='<div class="cd e"></div>';
+ for(let d=1;d<=dim;d++){const ds=`${CAL.m}-${pad(d)}`,x=map[ds],k=x?(x.a&&!x.p?'A':x.p&&!x.a?'P':'M'):'';
+  c+=`<button class="cd ${k} ${ds===CAL.sel?'sel':''} ${ds===today()?'tdy':''}" data-a="calDay" data-d="${ds}" aria-label="${fmtD(ds)}: ${x?`${x.p} present, ${x.a} absent`:'no record'}"><b>${d}</b>${x?`<span>${x.p?'✓'+x.p:''} ${x.a?'✗'+x.a:''}</span>`:''}</button>`}
+ return`<div class="calhead"><button data-a="calPrev" aria-label="Previous month">‹</button><strong>${MONL[m-1]} ${y}</strong><button data-a="calToday">Today</button><button data-a="calNext" aria-label="Next month">›</button></div><div class="calgrid">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div class="dw">${x}</div>`).join('')}${c}</div><div class="legend">✓ Present · ✗ Absent · blank = No class / no record · amber = mixed day</div>`}
+function dayPanel(sj){const rs=S.attendance.filter(r=>r.date===CAL.sel&&(!sj||r.subjectId===sj)).sort(cmpAsc);
+ return`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3>${fmtD(CAL.sel)}</h3><button class="btn sm" data-a="add" data-d="${CAL.sel}" data-s="${esc(sj||'')}">+ Add record for this date</button></div>${rs.length?`<div class="tw"><table><thead><tr><th>Date</th><th>Subject</th><th>Period</th><th>Status</th><th>Time</th><th>Location</th><th></th></tr></thead><tbody>${rs.map(recRow).join('')}</tbody></table></div>`:'<p class="mut">No class / no record on this date.</p>'}</div>`}
+const calendar=()=>`<div class="card">${calHtml('')}</div>${dayPanel('')}`;
+
+/* subjects + detail */
+const subjects=()=>`${rangeBar()}<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h3>Subject-wise attendance</h3><button class="btn sm" data-a="subjAdd">+ Add subject</button></div>${subjTable(bySubject(filt(S.attendance,curRange())))}</div>`;
+function subjectView(id){const s=subj(id);if(!s)return'<div class="card">Subject not found. <a href="#/subjects">Back to subjects</a></div>';
+ const{from,to}=curRange(),all=filt(S.attendance,{subj:id}),recs=filt(all,{from,to}).sort(cmpAsc),T=tally(recs),tg=S.settings.targetPercentage,mk=monthKeys(recs);
+ if(T.t){let cp=0;chart('cTr',{type:'line',data:{labels:recs.map(r=>fmtD(r.date)),datasets:[{label:'Cumulative %',data:recs.map((r,i)=>{if(r.status==='present')cp++;return+(cp/(i+1)*100).toFixed(2)}),borderColor:PRI,tension:.25,pointRadius:2},{label:'Target',data:recs.map(()=>tg),borderColor:WARN,borderDash:[6,4],pointRadius:0}]},options:{maintainAspectRatio:false,scales:{y:yPct}}});
+  chart('cMo',{type:'bar',data:{labels:mk.map(fmtM),datasets:[{label:'Monthly %',data:mk.map(k=>+tally(recs.filter(r=>r.date.startsWith(k))).pct.toFixed(2)),backgroundColor:PRI,borderRadius:6}]},options:{maintainAspectRatio:false,scales:{y:yPct}}})}
+ return`<div class="card"><a href="#/subjects">← All subjects</a><h2 style="margin-top:6px">${esc(s.name)}</h2><div class="mut">${esc(s.code)} · ${esc(s.type)}</div>
+ <div class="acts"><button class="btn ok" data-a="quick" data-s="${esc(id)}" data-st="present">✓ Mark Present</button><button class="btn" data-a="quick" data-s="${esc(id)}" data-st="absent">✗ Mark Absent</button><button class="btn" data-a="add" data-d="${today()}" data-s="${esc(id)}">+ Add with details</button></div>
+ <p class="note">${S.settings.locationVerificationEnabled?'📍 Location is requested once, only when you press Mark Present (to record where you were). Never tracked in the background.':'Location verification is off.'}</p></div>
+ ${rangeBar()}<div class="grid c5">${stat('Attendance',T.t?fp(T.pct):'—',T.t?level(T.pct).msg:NOD)}${stat('Present',T.p)}${stat('Absent',T.a)}${stat('Total',T.t)}${stat('To reach '+tg+'%',T.t?needTxt(need(T.p,T.t,tg)):'—')}</div>
+ <div class="grid c2"><div class="card"><h3>Attendance trend</h3>${T.t?cvs('cTr'):`<div class="empty">${NOD}</div>`}</div><div class="card"><h3>Monthly attendance</h3>${T.t?cvs('cMo'):`<div class="empty">${NOD}</div>`}
+  ${T.t?`<div class="tw"><table><thead><tr><th>Month</th><th>P</th><th>A</th><th>Total</th><th>%</th></tr></thead><tbody>${mk.map(k=>{const t=tally(recs.filter(r=>r.date.startsWith(k)));return`<tr><td>${fmtM(k)}</td><td>${t.p}</td><td>${t.a}</td><td>${t.t}</td><td>${fp(t.pct)}</td></tr>`}).join('')}</tbody></table></div>`:''}</div></div>
+ <div class="card">${calHtml(id)}</div>${dayPanel(id)}
+ <div class="card"><h3>Recent records</h3>${all.length?`<div class="tw"><table><thead><tr><th>Date</th><th>Subject</th><th>Period</th><th>Status</th><th>Time</th><th>Location</th><th></th></tr></thead><tbody>${[...all].sort((a,b)=>-cmpAsc(a,b)).slice(0,10).map(recRow).join('')}</tbody></table></div>`:`<div class="empty">${NOD}</div>`}</div>`}
+
+/* statistics */
+let CALC={s:'',month:today().slice(0,7)};
+function stats(){const{from,to}=curRange(),recs=filt(S.attendance,{from,to}),tg=S.settings.targetPercentage,cr=filt(S.attendance,{subj:CALC.s}),ct=tally(filt(cr,{from,to}));
+ const mrecs=S.attendance.filter(r=>r.date.startsWith(CALC.month)),mt=tally(mrecs),mrows=bySubject(mrecs),days=[...new Set(recs.map(r=>r.date))].sort();
+ if(recs.length){let p=0,n=0;const byd={};recs.slice().sort(cmpAsc).forEach(r=>{n++;if(r.status==='present')p++;byd[r.date]=+(p/n*100).toFixed(2)});
+  chart('cTrend',{type:'line',data:{labels:days.map(fmtD),datasets:[{label:'Overall cumulative %',data:days.map(d=>byd[d]),borderColor:PRI,tension:.25,pointRadius:2},{label:'Target',data:days.map(()=>tg),borderColor:WARN,borderDash:[6,4],pointRadius:0}]},options:{maintainAspectRatio:false,scales:{y:yPct}}});
+  const mk=monthKeys(recs);chart('cMon2',{type:'bar',data:{labels:mk.map(fmtM),datasets:[{label:'Monthly overall %',data:mk.map(k=>+tally(recs.filter(r=>r.date.startsWith(k))).pct.toFixed(2)),backgroundColor:PRI,borderRadius:6}]},options:{maintainAspectRatio:false,scales:{y:yPct}}})}
+ if(mt.t){const a=mrows.filter(r=>r.t);chart('cMs',{type:'bar',data:{labels:a.map(r=>r.s.code||r.s.name),datasets:[{label:'% in '+fmtM(CALC.month),data:a.map(r=>+r.pct.toFixed(2)),backgroundColor:a.map(r=>level(r.pct).k==='low'?BAD:level(r.pct).k==='near'?WARN:OK),borderRadius:6}]},options:{maintainAspectRatio:false,scales:{y:yPct},plugins:{tooltip:{callbacks:{title:i=>a[i[0].dataIndex].s.name}}}}})}
+ const nd=need(ct.p,ct.t,tg);
+ return`${rangeBar()}<div class="card"><h3>Target attendance calculator</h3><div class="fg" style="max-width:560px"><label>Subject<select data-ch="calcS">${subjOpts(CALC.s,true)}</select></label><label>Target %<input type="number" min="1" max="100" step="0.5" value="${tg}" data-ch="target"></label></div>
+ <p class="note">Uses the date range selected above.</p>
+ ${ct.t?`<div class="grid c3"><div class="card stat"><small>Current attendance</small><b>${fp(ct.pct)}</b><span>${ct.p} present of ${ct.t} classes</span></div><div class="card stat"><small>Needed to reach ${tg}%</small><b style="font-size:1.2rem">${needTxt(nd)}</b><span>${nd===0?`You can miss up to ${canMiss(ct.p,ct.t,tg)} more and stay ≥ ${tg}%`:'attend consecutively'}</span></div>
+ <div class="card stat"><small>Next class</small><span>If you attend: <b>${fp((ct.p+1)/(ct.t+1)*100)}</b></span><br><span>If you miss: <b>${fp(ct.p/(ct.t+1)*100)}</b></span></div></div>`:`<div class="empty">${NOD}</div>`}</div>
+ <div class="grid c2"><div class="card"><h3>Overall trend</h3>${recs.length?cvs('cTrend'):`<div class="empty">${NOD}</div>`}</div><div class="card"><h3>Monthly overall %</h3>${recs.length?cvs('cMon2'):`<div class="empty">${NOD}</div>`}</div></div>
+ <div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:end"><h3>Monthly attendance report</h3><label style="margin:0">Month<input type="month" data-ch="calcM" value="${esc(CALC.month)}"></label></div>
+ ${mt.t?`<div class="grid c2" style="margin-top:12px"><div class="tw"><table><thead><tr><th>Subject</th><th>Present</th><th>Absent</th><th>Total</th><th>%</th></tr></thead><tbody>${mrows.filter(r=>r.t).map(r=>`<tr><td>${esc(r.s.name)}</td><td>${r.p}</td><td>${r.a}</td><td>${r.t}</td><td>${fp(r.pct)}</td></tr>`).join('')}</tbody><tfoot><tr><th>Monthly Overall</th><th>${mt.p}</th><th>${mt.a}</th><th>${mt.t}</th><th>${fp(mt.pct)}</th></tr></tfoot></table></div>${cvs('cMs')}</div>`:`<div class="empty" style="margin-top:12px">${NOD} for ${esc(fmtM(CALC.month))}</div>`}</div>`}
+
+/* reports */
+let RP={from:'',to:'',subj:'',type:'detailed'};
+const repRecs=()=>filt(S.attendance,RP).sort(cmpAsc);
+function reportHtml(){const recs=repRecs(),T=tally(recs),st=S.student,sj=RP.subj?subj(RP.subj):null,loc=S.settings.printShowLocation,TY={detailed:'Detailed',summary:'Summary',monthly:'Monthly',subjectwise:'Subject-wise'}[RP.type];
+ const per=RP.from||RP.to?`${RP.from?fmtD(RP.from):'Start'} to ${RP.to?fmtD(RP.to):'Latest record'}`:'All records';
+ const sumRows=rs=>bySubject(rs).filter(r=>r.t).map(r=>`<tr><td>${esc(r.s.code)}</td><td>${esc(r.s.name)}</td><td>${r.p}</td><td>${r.a}</td><td>${r.t}</td><td>${fp(r.pct)}</td></tr>`).join('');
+ const sumTbl=rs=>`<table><thead><tr><th>Code</th><th>Subject</th><th>Present</th><th>Absent</th><th>Total</th><th>Percentage</th></tr></thead><tbody>${sumRows(rs)}</tbody></table>`;
+ let body='';
+ if(!recs.length)body=`<p><b>${NOD}</b> for the selected period.</p>`;
+ else if(RP.type==='detailed')body=`<table><thead><tr><th>Date</th><th>Subject</th><th>Period</th><th>Status</th><th>Time</th>${loc?'<th>Location Verification</th>':''}</tr></thead><tbody>${recs.map(r=>`<tr><td>${fmtD(r.date)}</td><td>${sname(r.subjectId)}</td><td>${r.period}</td><td>${r.status==='present'?'Present':'Absent'}</td><td>${timeTxt(r)}</td>${loc?`<td>${locLabel(r)}</td>`:''}</tr>`).join('')}</tbody></table>`;
+ else if(RP.type==='summary')body=sumTbl(recs);
+ else if(RP.type==='monthly')body=monthKeys(recs).map(k=>{const mr=recs.filter(r=>r.date.startsWith(k)),t=tally(mr);return`<h4>${MONL[+k.slice(5)-1]} ${k.slice(0,4)}</h4>${sumTbl(mr)}<div><b>Monthly Overall Attendance: ${fp(t.pct)}</b></div>`}).join('');
+ else body=S.subjects.filter(s=>recs.some(r=>r.subjectId===s.id)).map(s=>{const sr=recs.filter(r=>r.subjectId===s.id),t=tally(sr);return`<h4>${esc(s.code)} — ${esc(s.name)} (Present ${t.p}, Absent ${t.a}, Total ${t.t}, ${fp(t.pct)})</h4><table><thead><tr><th>Date</th><th>Period</th><th>Status</th><th>Time</th>${loc?'<th>Location Verification</th>':''}</tr></thead><tbody>${sr.map(r=>`<tr><td>${fmtD(r.date)}</td><td>${r.period}</td><td>${r.status==='present'?'Present':'Absent'}</td><td>${timeTxt(r)}</td>${loc?`<td>${locLabel(r)}</td>`:''}</tr>`).join('')}</tbody></table>`}).join('');
+ return`<div class="sub">ATTENDANCE REPORT — ${TY.toUpperCase()}</div><h2>${esc(st.college).toUpperCase()}</h2>
+ <div class="meta"><div><b>Branch:</b> ${esc(st.branch)}</div><div><b>Batch:</b> ${esc(st.batch)}</div><div><b>Student Name:</b> ${esc(st.name)||'—'}</div><div><b>Registration No:</b> ${esc(st.registrationNumber)||'—'}</div><div><b>Semester:</b> ${esc(st.semester)}</div><div><b>Academic Session:</b> ${esc(st.session)}</div><div><b>Report Period:</b> ${per}</div><div><b>Subject:</b> ${sj?esc(sj.code+' — '+sj.name):'All Subjects'}</div></div>
+ <div><b>Total Classes:</b> ${T.t} &nbsp; <b>Present:</b> ${T.p} &nbsp; <b>Absent:</b> ${T.a}</div>${body}
+ <div class="tot">Overall Attendance: ${T.t?fp(T.pct):NOD}</div><div>Generated On: ${fmtTS(new Date().toISOString())}</div>
+ ${S.settings.printSignature?'<div class="sign"><span>Student Signature</span><span>Faculty / Mentor Signature</span></div>':''}`}
+const reports=()=>`<div class="printwrap"><div class="card noprint"><h3>Print Attendance Report</h3><div class="fg"><label>Start date<input type="date" data-ch="rpFrom" value="${esc(RP.from)}"></label><label>End date<input type="date" data-ch="rpTo" value="${esc(RP.to)}"></label>
+ <label>Subject<select data-ch="rpSubj">${subjOpts(RP.subj,true)}</select></label><label>Report type<select data-ch="rpType">${[['detailed','Detailed'],['summary','Summary'],['monthly','Monthly'],['subjectwise','Subject-wise']].map(([k,l])=>`<option value="${k}" ${RP.type===k?'selected':''}>${l}</option>`).join('')}</select></label></div>
+ <div class="acts"><button class="btn pri" data-a="doPrint">🖨 Print Attendance Report</button><button class="btn" data-a="pdf">⬇ Download PDF</button></div><p class="note">“Download PDF” creates an A4 PDF file of the report shown below. If your browser blocks downloads, use Print and choose “Save as PDF” as the destination.</p></div>
+ <div id="reportOut" class="report">${reportHtml()}</div></div>`;
+
+/* settings */
+const ck=(n,l,v)=>`<label class="ck"><input type="checkbox" name="${n}" ${v?'checked':''}> ${l}</label>`;
+const inp=(n,l,v,x='')=>`<label>${l}<input name="${n}" value="${esc(v)}" ${x}></label>`;
+function settings(){const st=S.student,s=S.settings;
+ return`<div class="card"><h3>Profile</h3><form data-f="profile"><div class="fg">${inp('name','Student name',st.name,'maxlength="120"')}${inp('registrationNumber','Registration / Roll number',st.registrationNumber,'maxlength="40"')}${inp('college','College',st.college)}${inp('branch','Branch',st.branch)}${inp('batch','Batch',st.batch)}${inp('semester','Semester',st.semester)}${inp('session','Academic session',st.session)}</div><button class="btn pri">Save profile</button></form></div>
+ <div class="card"><h3>Attendance targets &amp; semester dates</h3><form data-f="targets"><div class="fg"><label>Target % (warning below this)<input name="targetPercentage" type="number" min="1" max="100" step="0.5" value="${s.targetPercentage}"></label><label>“On track” above %<input name="goodPercentage" type="number" min="1" max="100" step="0.5" value="${s.goodPercentage}"></label><label>Semester start<input name="semStart" type="date" value="${esc(s.semStart)}"></label><label>Semester end<input name="semEnd" type="date" value="${esc(s.semEnd)}"></label></div><p class="note">Alerts are informational only. “Semester” quick-filter uses these dates (blank = all records).</p><button class="btn pri">Save</button></form></div>
+ <div class="card"><h3>Location verification &amp; college geofence</h3><form data-f="loc">${ck('locationVerificationEnabled','Ask for my location when I press “Mark Present” (one-time, never in background)',s.locationVerificationEnabled)}${ck('geofenceEnabled','Enable college geofence check',s.geofenceEnabled)}${ck('geofenceRequired','Require being inside the area to count as “Location Verified”',s.geofenceRequired)}
+ <div class="fg">${inp('collegeLatitude','College latitude',s.collegeLatitude,'inputmode="decimal"')}${inp('collegeLongitude','College longitude',s.collegeLongitude,'inputmode="decimal"')}<label>Allowed radius (m)<input name="geofenceRadius" type="number" min="10" max="50000" value="${s.geofenceRadius}"></label></div>
+ <p class="note">Location is only read when you press a button, saved only on this device, and never shared. If it is denied you can still save attendance — it is marked “Location Not Verified”.</p><div class="acts"><button class="btn pri">Save</button><button class="btn" type="button" data-a="geoHere">📍 Use my current location as college location</button></div></form></div>
+ <div class="card"><h3>Subjects</h3><div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th>Type</th><th></th></tr></thead><tbody>${S.subjects.map(x=>`<tr><td>${esc(x.code)}</td><td>${esc(x.name)}</td><td>${esc(x.type)}</td><td style="white-space:nowrap"><button class="btn sm" data-a="subjEdit" data-id="${esc(x.id)}">Edit</button> <button class="btn sm bad" data-a="subjDel" data-id="${esc(x.id)}">Delete</button></td></tr>`).join('')}</tbody></table></div><div class="acts"><button class="btn" data-a="subjAdd">+ Add subject</button></div></div>
+ <div class="card"><h3>Theme</h3><div class="chips">${['system','light','dark'].map(t=>`<button class="chip ${s.theme===t?'on':''}" data-a="setTheme" data-v="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div></div>
+ <div class="card"><h3>Print preferences</h3><form data-f="print">${ck('printShowLocation','Show location verification column',s.printShowLocation)}${ck('printSignature','Show signature lines',s.printSignature)}<button class="btn pri">Save</button></form></div>
+ <div class="card"><h3>Data: backup, restore, export</h3><div class="acts"><button class="btn" data-a="exportJSON">⬇ Export Data (JSON)</button><button class="btn" data-a="backup">⬇ Backup Data</button><button class="btn" data-a="exportCSV">⬇ Attendance CSV</button><button class="btn" data-a="importMerge">⬆ Import (merge)</button><button class="btn" data-a="restore">⬆ Restore backup (replace all)</button><button class="btn bad" data-a="resetAll">Reset all data</button></div>
+ <p class="note">Everything lives in this browser’s storage (no server). Take a backup regularly — clearing browser data deletes it. Imports are validated and sanitised.</p></div>
+ <div class="card"><h3>PIN lock</h3><p class="note">${S.pin?'PIN lock is ON.':'PIN lock is OFF.'} The PIN is stored only as a salted SHA-256 hash. It keeps casual onlookers out; it does not encrypt data stored in the browser.</p><form data-f="pin"><div class="fg" style="max-width:640px"><label>${S.pin?'New PIN':'PIN'} (4–8 digits)<input name="pin" type="password" inputmode="numeric" pattern="\\d{4,8}" autocomplete="new-password"></label><label>Your Gmail (optional reminder)<input name="email" type="email" maxlength="120" value="${esc(S.pin?.em||'')}" placeholder="you@gmail.com"></label></div><p class="note">Setting a PIN also creates a <b>recovery code</b>. Save it in your Gmail (a “mail to myself” button is provided). If you forget the PIN, the code removes the lock — your attendance data stays untouched. Real email verification needs a server, which this offline app does not have.</p><div class="acts"><button class="btn pri">${S.pin?'Change PIN':'Set PIN'}</button>${S.pin?'<button class="btn" type="button" data-a="newCode">🔑 New recovery code</button><button class="btn bad" type="button" data-a="removePin">Remove PIN</button>':''}</div></form></div>`}
+
+/* ================= router ================= */
+const TITLES={dashboard:'Dashboard',attendance:'Attendance',calendar:'Calendar',subjects:'Subjects',subject:'Subject',reports:'Reports',stats:'Statistics',settings:'Settings'};
+function render(){const[v,arg]=(location.hash.slice(2)||'dashboard').split('/'),views={dashboard,attendance,calendar,subjects,subject:()=>subjectView(arg),reports,stats,settings},k=views[v]?v:'dashboard';
+ Q=[];$('#view').innerHTML=views[k]();$('#ttl').textContent=TITLES[k];document.title=`${TITLES[k]} — My Attendance`;
+ const on=k==='subject'?'subjects':k;const nv=(c)=>NAV.map(([id,l,i])=>`<a class="${c} ${on===id?'on':''}" href="#/${id}" ${on===id?'aria-current="page"':''}>${ic(i,c==='nv'?18:20)}<span>${l}</span></a>`).join('');
+ $('#nav').innerHTML=nv('nv');$('#bnav').innerHTML=nv('');$('#lockBtn').hidden=!S.pin;$('#backBtn').hidden=(k==='dashboard');flushCharts()}
+let prevH=[],curH=location.hash,goBack=false;
+addEventListener('hashchange',()=>{if(!goBack&&curH!==location.hash)prevH.push(curH);goBack=false;curH=location.hash;if(!$('#app').hidden){render();scrollTo(0,0)}});
+
+/* ================= record flows ================= */
+const locErr=e=>e&&e.code===1?'permission denied':e&&e.code===2?'position unavailable':e&&e.code===3?'timed out':(e&&e.message)||'unknown error';
+const getLoc=()=>new Promise((ok,no)=>{if(!navigator.geolocation)return no({code:0,message:'not supported by this browser'});let done=false;const t=setTimeout(()=>{if(!done){done=true;no({code:3})}},20000);
+ try{navigator.geolocation.getCurrentPosition(p=>{if(!done){done=true;clearTimeout(t);ok(p)}},e=>{if(!done){done=true;clearTimeout(t);no(e)}},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}catch(e){clearTimeout(t);done=true;no({code:0,message:'blocked in this view'})}})
+function applyLoc(rec,p){rec.latitude=p.coords.latitude;rec.longitude=p.coords.longitude;rec.accuracy=p.coords.accuracy;rec.timestamp=new Date().toISOString();rec.locationVerified=true;
+ const g=geoCfg();rec.geofence=g?(hav(rec.latitude,rec.longitude,g.la,g.lo)<=g.r?'inside':'outside'):''}
+let busy=false;
+async function addRecord(r){if(busy)return false;busy=true;
+ let locNote='';try{const rec={id:uid(),startTime:'',endTime:'',note:'',...r,timestamp:new Date().toISOString(),locationVerified:false,latitude:null,longitude:null,accuracy:null,geofence:''};
+  if(rec.status==='present'&&S.settings.locationVerificationEnabled){
+   toast('Requesting your location… please allow it in the browser prompt (read once, only now).','',0);
+   try{applyLoc(rec,await getLoc())}catch(e){locNote=` Location Not Verified (${locErr(e)}).`}
+   if(rec.geofence==='outside'&&S.settings.geofenceRequired){if(!(await ask('You appear to be OUTSIDE the allowed attendance area.\n\nSave as Present with “Location Not Verified”?',{ok:'Save anyway'})))return false;rec.locationVerified=false}}
+  S.attendance.push(rec);Store.save();closeModal();render();
+  toast(`${rec.status==='present'?'Present':'Absent'} saved — ${fmtD(rec.date)}, period ${rec.period}. ${rec.locationVerified?'Location Verified'+(rec.geofence?` (${rec.geofence==='inside'?'Inside':'Outside'} allowed attendance area)`:''):(locNote||(rec.status==='present'?' Location Not Verified.':''))}`,rec.status==='present'&&!rec.locationVerified&&locNote?'err':'',5500);return true}
+ finally{busy=false;if($('#toast').textContent.startsWith('Requesting'))$('#toast').className=''}}
+function recForm(rec,def={}){if(!S.subjects.length){toast('Add a subject first (Settings → Subjects)','err');return}
+ const r=rec||{date:def.date||today(),subjectId:def.subjectId&&subj(def.subjectId)?def.subjectId:S.subjects[0].id,period:nextPeriod(def.date||today())||1,status:'present',startTime:'',endTime:'',note:''};
+ openModal(`<div class="mh"><h3>${rec?'Edit attendance':'Add attendance'}</h3><button class="x" data-a="close" aria-label="Close">✕</button></div>
+ <form data-f="rec" data-id="${rec?esc(rec.id):''}"><div class="fg"><label>Date<input type="date" name="date" required value="${esc(r.date)}"></label><label>Subject<select name="subjectId">${subjOpts(r.subjectId)}</select></label>
+ <label>Period / lecture no.<input type="number" name="period" min="1" max="20" required value="${r.period}"></label>${rec?`<label>Status<select name="status"><option value="present" ${r.status==='present'?'selected':''}>Present</option><option value="absent" ${r.status==='absent'?'selected':''}>Absent</option></select></label>`:''}
+ <label>Start time (optional)<input type="time" name="startTime" value="${esc(r.startTime)}"></label><label>End time (optional)<input type="time" name="endTime" value="${esc(r.endTime)}"></label></div>
+ <label>Note (optional)<textarea name="note" maxlength="500">${esc(r.note)}</textarea></label><div class="err" id="fErr" role="alert"></div>
+ ${rec?'':`<p class="note">${S.settings.locationVerificationEnabled?'📍 “Mark Present” asks for your location once, to record where you were. Nothing is tracked later.':'Location verification is off.'}</p>`}
+ <div class="acts">${rec?'<button class="btn pri" value="save">Save changes</button>':'<button class="btn ok" value="present">✓ Mark Present</button><button class="btn" value="absent">✗ Mark Absent</button>'}<button class="btn" type="button" data-a="close">Cancel</button></div></form>`)}
+const SUB={};
+SUB.rec=async(f,ev)=>{const fd=new FormData(f),id=f.dataset.id,err=m=>{$('#fErr').textContent=m},date=String(fd.get('date')||''),sid=String(fd.get('subjectId')||''),period=parseInt(fd.get('period'),10),tm=n=>{const v=String(fd.get(n)||'');return/^([01]\d|2[0-3]):[0-5]\d$/.test(v)?v:''};
+ if(!validDate(date))return err('Enter a valid date.');if(!subj(sid))return err('Choose a subject.');if(!(period>=1&&period<=20))return err('Period must be 1–20.');
+ const s1=tm('startTime'),e1=tm('endTime');if(s1&&e1&&e1<s1)return err('End time must be after start time.');
+ if(S.attendance.some(x=>x.id!==id&&x.date===date&&x.period===period))return err(`Period ${period} on ${fmtD(date)} already has a record. Pick another period or edit that record.`);
+ const base={date,subjectId:sid,period,startTime:s1,endTime:e1,note:str(String(fd.get('note')||''),500)};
+ if(id){const o=S.attendance.find(x=>x.id===id);if(!o)return;Object.assign(o,base,{status:fd.get('status')==='absent'?'absent':'present'});Store.save();closeModal();render();toast('Record updated')}
+ else await addRecord({...base,status:ev.submitter&&ev.submitter.value==='absent'?'absent':'present'})};
+function detail(id){const r=S.attendance.find(x=>x.id===id);if(!r)return;const hasC=r.latitude!=null&&r.longitude!=null,g=geoCfg();
+ openModal(`<div class="mh"><h3>Attendance record</h3><button class="x" data-a="close" aria-label="Close">✕</button></div><dl class="dl"><dt>Subject</dt><dd>${sname(r.subjectId)} (${esc(subj(r.subjectId)?.code||'')})</dd><dt>Date</dt><dd>${fmtD(r.date)}</dd><dt>Period</dt><dd>${r.period}</dd><dt>Status</dt><dd>${badge(r.status)}</dd><dt>Class time</dt><dd>${timeTxt(r)}</dd><dt>Recorded time</dt><dd>${r.timestamp?fmtTS(r.timestamp):'—'}</dd>
+ <dt>Location</dt><dd>${r.locationVerified?'✔ Location Verified':'Location Not Verified'}</dd><dt>Latitude</dt><dd>${hasC?r.latitude.toFixed(6):'—'}</dd><dt>Longitude</dt><dd>${hasC?r.longitude.toFixed(6):'—'}</dd><dt>Accuracy</dt><dd>${r.accuracy!=null?'±'+Math.round(r.accuracy)+' m':'—'}</dd>
+ ${r.geofence?`<dt>Area check</dt><dd>${r.geofence==='inside'?'Inside allowed attendance area':'Outside allowed attendance area'}</dd>`:''}<dt>Timestamp</dt><dd>${r.timestamp?esc(r.timestamp):'—'}</dd><dt>Notes</dt><dd>${esc(r.note)||'—'}</dd></dl>
+ ${hasC?'<div id="map" class="map" role="img" aria-label="Map of recorded location"></div>':'<p class="mut">No coordinates saved for this record, so there is no map.</p>'}
+ <div class="acts">${!r.locationVerified&&S.settings.locationVerificationEnabled?`<button class="btn ok" data-a="verify" data-id="${esc(r.id)}">📍 Verify Location (reads it now)</button>`:''}<button class="btn" data-a="edit" data-id="${esc(r.id)}">Edit</button><button class="btn bad" data-a="del" data-id="${esc(r.id)}">Delete</button></div>`);
+ if(hasC)setTimeout(()=>{const el=$('#map');if(!el)return;if(typeof L==='undefined'){el.textContent='Map library unavailable.';return}
+  curMap=L.map(el).setView([r.latitude,r.longitude],17);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(curMap);
+  if(r.accuracy)L.circle([r.latitude,r.longitude],{radius:r.accuracy,weight:1,color:'#6366f1'}).addTo(curMap);
+  L.circleMarker([r.latitude,r.longitude],{radius:9,color:'#fff',weight:2,fillColor:'#4f46e5',fillOpacity:1}).addTo(curMap).bindTooltip('Recorded location');
+  if(g)L.circle([g.la,g.lo],{radius:g.r,color:'#f59e0b',fill:false,dashArray:'6 4'}).addTo(curMap).bindTooltip('Allowed area');setTimeout(()=>curMap&&curMap.invalidateSize(),100)},60)}
+/* subjects */
+function subjForm(s){openModal(`<div class="mh"><h3>${s?'Edit subject':'Add subject'}</h3><button class="x" data-a="close" aria-label="Close">✕</button></div><form data-f="subj" data-id="${s?esc(s.id):''}"><div class="fg">${inp('code','Subject code',s?.code||'','maxlength="20"')}<label>Type<select name="type"><option ${s?.type!=='Lab'?'selected':''}>Theory</option><option ${s?.type==='Lab'?'selected':''}>Lab</option></select></label></div>${inp('name','Subject name',s?.name||'','required maxlength="100"')}<div class="acts"><button class="btn pri">Save</button><button class="btn" type="button" data-a="close">Cancel</button></div></form>`)}
+SUB.subj=f=>{const fd=new FormData(f),name=str(String(fd.get('name')||''),100);if(!name)return toast('Subject name is required','err');const d={code:str(String(fd.get('code')||''),20),name,type:fd.get('type')==='Lab'?'Lab':'Theory'};
+ if(f.dataset.id)Object.assign(subj(f.dataset.id),d);else S.subjects.push({id:uid(),...d});Store.save();closeModal();render();toast('Subject saved')};
+SUB.profile=f=>{const fd=new FormData(f);for(const k of Object.keys(S.student))if(k!=='id'&&fd.has(k))S.student[k]=str(String(fd.get(k)),k==='registrationNumber'?40:120);Store.save();toast('Profile saved');render()};
+SUB.targets=f=>{const fd=new FormData(f),t=num(fd.get('targetPercentage')),g=num(fd.get('goodPercentage')),a=String(fd.get('semStart')||''),b=String(fd.get('semEnd')||'');
+ if(t===null||t<1||t>100||g===null||g<t||g>100)return toast('Target must be 1–100 and “on track” ≥ target','err');if((a&&!validDate(a))||(b&&!validDate(b))||(a&&b&&b<a))return toast('Check semester dates','err');
+ Object.assign(S.settings,{targetPercentage:t,goodPercentage:g,semStart:a,semEnd:b});Store.save();toast('Saved');render()};
+SUB.loc=f=>{const fd=new FormData(f),la=String(fd.get('collegeLatitude')||'').trim(),lo=String(fd.get('collegeLongitude')||'').trim(),rad=num(fd.get('geofenceRadius')),en=fd.has('geofenceEnabled');
+ if(en&&(num(la)===null||Math.abs(num(la))>90||num(lo)===null||Math.abs(num(lo))>180))return toast('Enter valid college latitude (−90..90) and longitude (−180..180)','err');if(rad===null||rad<10||rad>50000)return toast('Radius must be 10–50000 m','err');
+ Object.assign(S.settings,{locationVerificationEnabled:fd.has('locationVerificationEnabled'),geofenceEnabled:en,geofenceRequired:fd.has('geofenceRequired'),collegeLatitude:la,collegeLongitude:lo,geofenceRadius:rad});Store.save();toast('Saved');render()};
+SUB.print=f=>{const fd=new FormData(f);S.settings.printShowLocation=fd.has('printShowLocation');S.settings.printSignature=fd.has('printSignature');Store.save();toast('Saved')};
+async function hashPin(pin,salt){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+':'+pin));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const CODE_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const rnd=n=>[...crypto.getRandomValues(new Uint8Array(n))].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function newRecovery(){const raw=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>CODE_ABC[x%32]).join(''),rs=rnd(12);S.pin.rs=rs;S.pin.rh=await hashPin(raw,rs);Store.save();return raw.match(/.{4}/g).join('-')}
+function showRecovery(code){const em=S.pin?.em||'',body=`Attendance tracker recovery code: ${code}\n\nUse "Forgot PIN?" on the lock screen and enter this code to remove the PIN. Your attendance data is not affected.`;
+ openModal(`<div class="mh"><h3>🔑 Your recovery code</h3></div><p>Save this now — it is shown <b>only once</b>.</p><p style="font:700 1.5rem/1.3 ui-monospace,monospace;letter-spacing:.08em;text-align:center;background:var(--pri2);border-radius:12px;padding:14px;user-select:all">${esc(code)}</p>
+ <p class="note">If you forget your PIN: lock screen → “Forgot PIN?” → enter this code. It removes the PIN only; no attendance data is deleted.</p><div class="acts"><button class="btn" data-a="copyCode" data-v="${esc(code)}">Copy</button>
+ <a class="btn" href="mailto:${encodeURIComponent(em)}?subject=${encodeURIComponent('Attendance tracker recovery code')}&body=${encodeURIComponent(body)}">✉ Email it to myself</a><button class="btn pri" data-a="close">I have saved it</button></div>`)}
+SUB.pin=async f=>{const fd=new FormData(f),pin=String(fd.get('pin')||''),em=str(String(fd.get('email')||''),120);if(!/^\d{4,8}$/.test(pin))return toast('PIN must be 4–8 digits','err');if(em&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))return toast('Enter a valid email or leave it empty','err');if(!(window.crypto&&crypto.subtle))return toast('PIN needs a secure context (https or localhost) in this browser','err');
+ const sl=rnd(12);S.pin={s:sl,h:await hashPin(pin,sl),em};const code=await newRecovery();render();showRecovery(code)};
+
+
+/* ================= PDF export (no library; builds a real A4 PDF) ================= */
+function buildPdf(){
+ const el=$('#reportOut'),W=595,H=842,M=40,CW=W-2*M,pages=[];let ops,y;
+ const newPage=()=>{ops=[];pages.push(ops);y=H-M};
+ const enc=s=>{let o='';for(const ch of String(s)){let c=ch.charCodeAt(0);if(c===0x2013)c=0x96;else if(c===0x2014)c=0x97;else if(c===0xA0)c=32;else if(c>255||(c>126&&c<160))c=63;o+=String.fromCharCode(c)}return o.replace(/[\\()]/g,'\\$&')};
+ const tw=(s,sz,b)=>String(s).length*sz*(b?.58:.52);
+ const T=(s,x,yy,sz,b)=>ops.push(`BT /F${b?2:1} ${sz} Tf ${x.toFixed(1)} ${yy.toFixed(1)} Td (${enc(s)}) Tj ET`);
+ const wrap=(s,w,sz,b)=>{const out=[];let l='';for(let wd of String(s).split(/\s+/)){while(tw(wd,sz,b)>w){const n=Math.max(1,Math.floor(w/(sz*(b?.58:.52))));if(l){out.push(l);l=''}out.push(wd.slice(0,n));wd=wd.slice(n)}const t=l?l+' '+wd:wd;if(tw(t,sz,b)>w&&l){out.push(l);l=wd}else l=t}out.push(l);return out};
+ const ensure=h=>{if(y-h<M+16)newPage()};
+ const line=(x1,y1,x2,y2,wd=.7)=>ops.push(`${wd} w ${x1} ${y1} m ${x2} ${y2} l S`);
+ const para=(s,sz,b,align)=>{for(const l of wrap(s,CW,sz,b)){ensure(sz+4);y-=sz+2;T(l,align==='c'?M+(CW-tw(l,sz,b))/2:M,y,sz,b);y-=2}};
+ function table(n){const hd=[...n.querySelectorAll('thead th')].map(t=>t.textContent.trim()),rows=[...n.querySelectorAll('tbody tr')].map(tr=>[...tr.children].map(c=>c.textContent.trim()));
+  const wt=hd.map((h,i)=>Math.min(38,Math.max(6,h.length*.9,rows.reduce((a,r)=>a+(r[i]||'').length,0)/Math.max(1,rows.length))));const sum=wt.reduce((a,b)=>a+b,0),cw=wt.map(w=>w/sum*CW),sz=8.5,lh=11;
+  const drawRow=(cells,bold,fill)=>{const lines=cells.map((c,i)=>wrap(c,cw[i]-6,sz,bold)),rh=Math.max(...lines.map(l=>l.length))*lh+6;
+   if(y-rh<M+16){newPage();if(!fill)drawRow(hd,true,true)}
+   let x=M;if(fill)ops.push(`0.9 g ${M} ${y-rh} ${CW} ${rh} re f 0 g`);
+   cells.forEach((c,i)=>{ops.push(`0.5 w ${x} ${y-rh} ${cw[i]} ${rh} re S`);lines[i].forEach((l,k)=>T(l,x+3,y-lh*(k+1)+1.5,sz,bold));x+=cw[i]});y-=rh};
+  y-=4;drawRow(hd,true,true);rows.forEach(r=>drawRow(r,false,false));y-=8}
+ newPage();
+ for(const n of el.children){
+  if(n.tagName==='TABLE')table(n);
+  else if(n.classList.contains('sub'))para(n.textContent.trim(),9,true,'c');
+  else if(n.tagName==='H2')para(n.textContent.trim(),15,true,'c');
+  else if(n.tagName==='H4')para(n.textContent.trim(),10.5,true);
+  else if(n.classList.contains('meta')){y-=4;line(M,y,M+CW,y,1.4);y-=4;const k=[...n.children].map(c=>c.textContent.trim());for(let i=0;i<k.length;i+=2){const a=wrap(k[i],CW/2-8,9.5),b=k[i+1]?wrap(k[i+1],CW/2-8,9.5):[],h=Math.max(a.length,b.length)*12;ensure(h);a.forEach((l,j)=>T(l,M,y-12*(j+1)+2,9.5));b.forEach((l,j)=>T(l,M+CW/2,y-12*(j+1)+2,9.5));y-=h}y-=2;line(M,y,M+CW,y,.7);y-=6}
+  else if(n.classList.contains('tot')){y-=4;para(n.textContent.trim(),12,true)}
+  else if(n.classList.contains('sign')){ensure(70);y-=46;line(M,y,M+170,y);line(W-M-170,y,W-M,y);const t=[...n.children].map(c=>c.textContent.trim());T(t[0]||'',M+20,y-12,9);T(t[1]||'',W-M-170+10,y-12,9);y-=16}
+  else para(n.textContent.trim().replace(/\s+/g,' '),10,false)}
+ pages.forEach((p,i)=>{ops=p;const t=`Page ${i+1} of ${pages.length}`;T(t,M+(CW-tw(t,8))/2,22,8)});
+ const objs=[];const add=s=>{objs.push(s);return objs.length};
+ add('<< /Type /Catalog /Pages 2 0 R >>');add('');add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+ const kids=[];pages.forEach((p,i)=>{const body=p.join('\n'),c=5+2*i;add(`<< /Length ${body.length} >>\nstream\n${body}\nendstream`);add(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${c} 0 R >>`);kids.push(`${c+1} 0 R`)});
+ objs[1]=`<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${pages.length} >>`;
+ let out='%PDF-1.4\n';const off=[];objs.forEach((o,i)=>{off.push(out.length);out+=`${i+1} 0 obj\n${o}\nendobj\n`});
+ const xr=out.length;out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+off.map(o=>String(o).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`;
+ const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u}
+function downloadPdf(){if(!$('#reportOut'))return;const u=buildPdf();download(`attendance-report-${today()}.pdf`,u,'application/pdf')}
+
+/* ================= actions ================= */
+const A={
+ preset:d=>{R.preset=d.v;if(d.v==='custom'&&!R.from&&!R.to){[R.from,R.to]=rangeOf('month')}render()},
+ openSubj:d=>{location.hash='#/subject/'+d.id},
+ calPrev:()=>{const[y,m]=CAL.m.split('-').map(Number);CAL.m=ymd(new Date(y,m-2,1)).slice(0,7);render()},
+ calNext:()=>{const[y,m]=CAL.m.split('-').map(Number);CAL.m=ymd(new Date(y,m,1)).slice(0,7);render()},
+ calToday:()=>{CAL={m:today().slice(0,7),sel:today()};render()},
+ calDay:d=>{CAL.sel=d.d;CAL.m=d.d.slice(0,7);const v=location.hash.slice(2).split('/')[0];if(v==='dashboard'||!v){location.hash='#/calendar'}else render()},
+ quick:async d=>{const s=subj(d.s);if(!s)return;const dup=S.attendance.filter(r=>r.date===today()&&r.subjectId===d.s);
+  if(dup.length&&!(await ask(`${s.name} already has ${dup.length} record(s) today. Add another class?`,{ok:'Add another'})))return;const p=nextPeriod(today());if(!p)return toast('No free period left today','err');
+  addRecord({date:today(),subjectId:d.s,period:p,status:d.st})},
+ add:d=>recForm(null,{date:d.d,subjectId:d.s}),
+ edit:d=>{const r=S.attendance.find(x=>x.id===d.id);if(r)recForm(r)},
+ del:async d=>{const r=S.attendance.find(x=>x.id===d.id);if(!r||!(await ask(`Delete this record?\n\n${subj(r.subjectId)?.name||'Subject'} · ${fmtD(r.date)} · period ${r.period} · ${r.status}`,{ok:'Delete',danger:true})))return;S.attendance=S.attendance.filter(x=>x.id!==d.id);Store.save();closeModal();render();toast('Record deleted')},
+ detail:d=>detail(d.id),
+ verify:async d=>{const r=S.attendance.find(x=>x.id===d.id);if(!r||busy)return;busy=true;toast('Requesting your location…','',0);
+  try{applyLoc(r,await getLoc());Store.save();toast('Location Verified'+(r.geofence?` — ${r.geofence==='inside'?'Inside':'Outside'} allowed attendance area`:''));render();detail(r.id)}catch(e){toast('Location not verified: '+locErr(e),'err',5000)}finally{busy=false}},
+ close:()=>closeModal(),closeBd:(d,b,e)=>{if(e.target===b)closeModal()},
+ theme:()=>{S.settings.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';Store.save();applyTheme();render()},
+ setTheme:d=>{S.settings.theme=d.v;Store.save();applyTheme();render()},
+ printGo:()=>{if(location.hash==='#/reports')A.doPrint();else location.hash='#/reports'},
+ doPrint:()=>print(),
+ clearF:()=>{F={q:'',st:'',date:'',subj:'',loc:''};render()},
+ subjAdd:()=>subjForm(null),subjEdit:d=>subjForm(subj(d.id)),
+ subjDel:async d=>{const s=subj(d.id),n=S.attendance.filter(r=>r.subjectId===d.id).length;if(!s||!(await ask(`Delete “${s.name}”${n?` and its ${n} attendance record(s)`:''}? This cannot be undone.`,{ok:'Delete',danger:true})))return;S.subjects=S.subjects.filter(x=>x.id!==d.id);S.attendance=S.attendance.filter(r=>r.subjectId!==d.id);Store.save();render();toast('Subject deleted')},
+ geoHere:async()=>{try{const p=await getLoc();$('[name=collegeLatitude]').value=p.coords.latitude.toFixed(6);$('[name=collegeLongitude]').value=p.coords.longitude.toFixed(6);toast('Coordinates filled — press Save')}catch(e){toast('Could not get location: '+locErr(e),'err')}},
+ exportJSON:()=>exportData('attendance-export'),backup:()=>exportData('attendance-backup'),
+ exportCSV:()=>{const cell=v=>{let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return`"${s.replace(/"/g,'""')}"`};
+  const rows=[['Date','Subject Code','Subject','Period','Status','Start Time','End Time','Recorded At','Location Verified','Latitude','Longitude','Accuracy (m)','Area Check','Note'],...[...S.attendance].sort(cmpAsc).map(r=>{const s=subj(r.subjectId)||{};return[r.date,s.code,s.name,r.period,r.status,r.startTime,r.endTime,r.timestamp,r.locationVerified?'Yes':'No',r.latitude,r.longitude,r.accuracy!=null?Math.round(r.accuracy):'',r.geofence,r.note]})];
+  download(`attendance-${today()}.csv`,'\ufeff'+rows.map(r=>r.map(cell).join(',')).join('\r\n'),'text/csv')},
+ importMerge:()=>{fileMode='merge';$('#file').click()},restore:()=>{fileMode='replace';$('#file').click()},
+ resetAll:async()=>{if((await ask('Erase ALL attendance data, subjects and settings on this device?',{ok:'Continue',danger:true}))&&(await ask('Really erase everything? Export a backup first if unsure.',{ok:'Erase everything',danger:true}))){const pin=S.pin;S=structuredClone(DEFAULT);S.pin=pin;Store.save();applyTheme();render();toast('All data reset')}},
+ removePin:async()=>{if(await ask('Remove PIN lock?',{ok:'Remove'})){S.pin=null;Store.save();render();toast('PIN lock removed')}},
+ lock:()=>showLock(),
+ newCode:async()=>{if(!S.pin)return;showRecovery(await newRecovery())},
+ copyCode:async d=>{try{await navigator.clipboard.writeText(d.v);toast('Code copied')}catch{toast('Select the code and copy it manually','err')}},
+ forgot:()=>showRecover(),unlockBack:()=>showLock(),
+ back:()=>{if(prevH.length){goBack=true;location.hash=prevH.pop()||'#/dashboard'}else location.hash='#/dashboard'},
+ pdf:()=>{try{downloadPdf()}catch(e){console.error(e);toast('Could not create PDF: '+e.message,'err',5000)}}};
+let fileMode='merge';
+function exportData(n){download(`${n}-${today()}.json`,JSON.stringify({app:'gec-attendance',version:1,exportedAt:new Date().toISOString(),student:S.student,subjects:S.subjects,attendance:S.attendance,settings:S.settings},null,2),'application/json')}
+$('#file').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.size>8e6)return toast('File too large (max 8 MB)','err');
+ try{const d=sanitize(JSON.parse(await f.text()),true);
+  if(fileMode==='replace'){if(!(await ask(`Replace ALL current data with this file (${d.attendance.length} records, ${d.subjects.length} subjects)?`,{ok:'Replace',danger:true})))return;const pin=S.pin;S=d;S.pin=pin;toast('Backup restored')}
+  else{const idmap={};let as=0,ar=0,sk=0;d.subjects.forEach(s=>{const ex=S.subjects.find(x=>x.id===s.id||(x.code&&x.code===s.code&&x.name===s.name));if(ex)idmap[s.id]=ex.id;else{let id=s.id;if(S.subjects.some(x=>x.id===id))id=uid();S.subjects.push({...s,id});idmap[s.id]=id;as++}});
+   d.attendance.forEach(r=>{const sid=idmap[r.subjectId];if(!sid||S.attendance.some(x=>x.id===r.id||(x.date===r.date&&x.period===r.period))){sk++;return}S.attendance.push({...r,subjectId:sid});ar++});toast(`Imported ${ar} record(s), ${as} subject(s); skipped ${sk} duplicate/conflicting`,'',5000)}
+  Store.save();applyTheme();render()}catch(err){toast('Import failed: '+(err.message||'invalid file'),'err',5000)}});
+const C={
+ rFrom:t=>{R.preset='custom';R.from=validDate(t.value)?t.value:'';R.to=R.to||'';render()},rTo:t=>{R.preset='custom';R.to=validDate(t.value)?t.value:'';render()},
+ f_q:t=>{F.q=t.value;$('#attTable').innerHTML=attTable()},f_st:t=>{F.st=t.value;$('#attTable').innerHTML=attTable()},f_date:t=>{F.date=t.value;$('#attTable').innerHTML=attTable()},f_subj:t=>{F.subj=t.value;$('#attTable').innerHTML=attTable()},f_loc:t=>{F.loc=t.value;$('#attTable').innerHTML=attTable()},
+ rpFrom:t=>{RP.from=validDate(t.value)?t.value:'';$('#reportOut').innerHTML=reportHtml()},rpTo:t=>{RP.to=validDate(t.value)?t.value:'';$('#reportOut').innerHTML=reportHtml()},rpSubj:t=>{RP.subj=t.value;$('#reportOut').innerHTML=reportHtml()},rpType:t=>{RP.type=t.value;$('#reportOut').innerHTML=reportHtml()},
+ calcS:t=>{CALC.s=t.value;render()},calcM:t=>{if(/^\d{4}-\d{2}$/.test(t.value)){CALC.month=t.value;render()}},
+ target:t=>{const v=num(t.value);if(v!==null&&v>=1&&v<=100){S.settings.targetPercentage=v;if(S.settings.goodPercentage<v)S.settings.goodPercentage=v;Store.save();render()}else toast('Target must be 1–100','err')}};
+document.addEventListener('click',e=>{
+ /* Submit buttons are handled here, not via native form submission: sandboxed viewers block it (no allow-forms). */
+ const sb=e.target.closest('form[data-f] button:not([type=button])');
+ if(sb){e.preventDefault();e.stopPropagation();const f=sb.form;if(f&&f.reportValidity()&&SUB[f.dataset.f])SUB[f.dataset.f](f,{submitter:sb});return}
+ const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b.dataset,b,e)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#modal').classList.contains('on'))closeModal();if((e.key==='Enter')&&e.target.matches('tr[data-a]'))A[e.target.dataset.a](e.target.dataset)});
+document.addEventListener('change',e=>{const t=e.target.closest('[data-ch]');if(t&&C[t.dataset.ch])C[t.dataset.ch](t)});
+document.addEventListener('input',e=>{const t=e.target.closest('[data-in]');if(t&&C[t.dataset.in])C[t.dataset.in](t)});
+document.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();SUB[f.dataset.f]&&SUB[f.dataset.f](f,e)});
+
+/* ================= lock + boot ================= */
+function showLock(){$('#app').hidden=true;closeModal();const L_=$('#lock');L_.className='on';
+ L_.innerHTML=`<div class="lockbox"><h2>🔒 Attendance locked</h2><p class="mut">Enter your PIN</p><input type="password" inputmode="numeric" id="lp" autocomplete="off" aria-label="PIN" style="width:100%;text-align:center;font-size:1.3rem"><div class="err" id="le" role="alert"></div><button class="btn pri" id="lu" style="width:100%;justify-content:center">Unlock</button><p style="margin:12px 0 0"><button class="btn sm" data-a="forgot">Forgot PIN?</button></p></div>`;
+ const go=async()=>{try{if(await hashPin($('#lp').value,S.pin.s)===S.pin.h){L_.className='';L_.innerHTML='';boot()}else{$('#le').textContent='Wrong PIN';$('#lp').value=''}}catch{$('#le').textContent='PIN check unavailable in this browser context'}};
+ $('#lu').onclick=go;$('#lp').onkeydown=e=>{if(e.key==='Enter')go()};$('#lp').focus()}
+let recTimer,otpTok='',otpCool;
+function showRecover(){const L_=$('#lock'),em=S.pin?.em,mask=em?em.replace(/^(.).*(@.*)$/,'$1***$2'):'',has=!!(S.pin&&S.pin.rh);clearInterval(recTimer);
+ L_.innerHTML=`<div class="lockbox" style="text-align:left;width:min(400px,94vw)"><h2>Forgot PIN?</h2><p class="note" style="margin-top:6px"><b>Your attendance data will NOT be deleted.</b> Only the PIN lock is removed; you can set a new PIN afterwards in Settings.</p>
+ ${has?`<label>Recovery code${mask?` <span class="mut">(saved in your Gmail ${esc(mask)}, subject “Attendance tracker recovery code”)</span>`:''}<input id="rc" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="text-transform:uppercase"></label><div class="err" id="re" role="alert"></div><button class="btn pri" id="rv" style="width:100%;justify-content:center">Verify code &amp; remove PIN</button>`:'<p class="warnbox">No recovery code was saved for this PIN.</p>'}
+ <div style="margin-top:14px"><button class="btn" id="es" style="width:100%;justify-content:center">✉ Email me a verification code</button><div class="note" id="ee" role="status" style="margin-top:6px">Sends an 8-digit code to your recovery Gmail (needs the hosted site).</div>
+ <div id="eo" hidden><label>8-digit code from your email<input id="ec" inputmode="numeric" maxlength="8" autocomplete="one-time-code"></label><button class="btn pri" id="ev" style="width:100%;justify-content:center">Verify email code &amp; remove PIN</button></div></div>
+ <hr style="border:0;border-top:1px solid var(--bd);margin:16px 0"><p class="note">${has?'Lost the code too?':'Use this option:'} You can still remove the PIN without deleting any data. This app has no server, so it cannot email you; anyone using this device could do the same, because the PIN is only a casual privacy lock (it does not encrypt your data).</p>
+ <button class="btn bad" id="rm" style="width:100%;justify-content:center" disabled>Remove PIN anyway (wait 15s)</button><p style="text-align:center;margin:12px 0 0"><button class="btn sm" data-a="unlockBack">← Back to PIN</button></p></div>`;
+ const done=m=>{clearInterval(recTimer);S.pin=null;Store.save();L_.className='';L_.innerHTML='';boot();toast(m,'',7000)};
+ let t=15;const rm=$('#rm');recTimer=setInterval(()=>{t--;if(!document.body.contains(rm)){clearInterval(recTimer);return}if(t<=0){clearInterval(recTimer);rm.disabled=false;rm.textContent='Remove PIN (keep my data)'}else rm.textContent=`Remove PIN anyway (wait ${t}s)`},1000);
+ const es=$('#es'),ee=$('#ee');clearInterval(otpCool);
+ es.onclick=async()=>{es.disabled=true;ee.textContent='Sending…';try{const r=await fetch('/.netlify/functions/send-otp',{method:'POST'}),j=await r.json().catch(()=>({}));
+  if(r.ok&&j.token){otpTok=j.token;$('#eo').hidden=false;$('#ec').focus();ee.textContent='Code sent to your recovery email. It is valid for 10 minutes. Check Spam too.';let c=60;es.textContent=`Resend in ${c}s`;otpCool=setInterval(()=>{c--;if(!document.body.contains(es)){clearInterval(otpCool);return}if(c<=0){clearInterval(otpCool);es.disabled=false;es.textContent='✉ Send a new code'}else es.textContent=`Resend in ${c}s`},1000);return}
+  ee.textContent=(r.status===404||j.error==='not_configured')?'Email verification is not set up on this site yet. Use the recovery code instead.':'Could not send the email right now. Try again later or use the recovery code.'}catch{ee.textContent='Email verification works only on the hosted website with internet. Use the recovery code instead.'}es.disabled=false};
+ $('#ev').onclick=async()=>{const code=$('#ec').value.trim();if(!/^\d{8}$/.test(code)){ee.textContent='Enter the 8-digit code.';return}ee.textContent='Checking…';try{const r=await fetch('/.netlify/functions/verify-otp',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({code,token:otpTok})}),j=await r.json().catch(()=>({}));if(r.ok&&j.ok)done('Email verified — PIN removed. Your attendance data is untouched. Set a new PIN in Settings.');else ee.textContent=j.error==='expired'?'That code has expired. Send a new one.':'That code is not correct.'}catch{ee.textContent='Could not reach the server. Try again.'}};
+ rm.onclick=()=>done('PIN removed. Your attendance data is untouched — set a new PIN in Settings if you want.');
+ if(has){const v=async()=>{try{const raw=normCode($('#rc').value);if(raw.length===12&&await hashPin(raw,S.pin.rs)===S.pin.rh)done('Code accepted — PIN removed. Your attendance data is untouched. Set a new PIN in Settings.');else $('#re').textContent='That code is not correct'}catch{$('#re').textContent='Could not verify in this browser context'}};$('#rv').onclick=v;$('#rc').onkeydown=e=>{if(e.key==='Enter')v()};$('#rc').focus()}}
+function boot(){$('#app').hidden=false;applyTheme();if(!location.hash)location.hash='#/dashboard';render()}
+applyTheme();S.pin?showLock():boot();
+</script>
+</body></html>
